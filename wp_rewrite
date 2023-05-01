@@ -1,0 +1,109 @@
+<?php
+
+/**
+ * Plugin Name: WP Rewrite Plugin3
+ * Plugin URI: https://ayman.com
+ * Description: A plugin that rewrites blog posts using synonyms
+ * Author: Ayman
+ * Version: 1.0
+ */
+
+// Register the plugin settings
+function wp_rewrite_plugin_register_settings()
+{
+    add_option('wp_rewrite_plugin_api_key', '');
+    register_setting('wp_rewrite_plugin_settings', 'wp_rewrite_plugin_api_key');
+}
+add_action('admin_init', 'wp_rewrite_plugin_register_settings');
+
+// Add the plugin settings page
+function wp_rewrite_plugin_add_settings_page()
+{
+    add_options_page(
+        'WP Rewrite Plugin Settings',
+        'WP Rewrite Plugin',
+        'manage_options',
+        'wp-rewrite-plugin',
+        'wp_rewrite_plugin_render_settings_page'
+    );
+}
+add_action('admin_menu', 'wp_rewrite_plugin_add_settings_page');
+
+// Render the plugin settings page
+function wp_rewrite_plugin_render_settings_page()
+{
+?>
+    <div class="wrap">
+        <h2>WP Rewrite Plugin Settings</h2>
+        <form method="post" action="options.php">
+            <?php settings_fields('wp_rewrite_plugin_settings'); ?>
+            <?php do_settings_sections('wp_rewrite_plugin_settings'); ?>
+            <table class="form-table">
+                <tr valign="top">
+                    <th scope="row">API Key</th>
+                    <td><input type="text" name="wp_rewrite_plugin_api_key" value="<?php echo esc_attr(get_option('wp_rewrite_plugin_api_key')); ?>" /></td>
+                </tr>
+            </table>
+            <?php submit_button(); ?>
+        </form>
+    </div>
+<?php
+}
+
+// Add a button to the post editor to trigger the rewriting
+function wp_rewrite_plugin_add_button()
+{
+    global $pagenow;
+    if ($pagenow === 'post.php' || $pagenow === 'post-new.php') {
+        add_action('media_buttons', 'wp_rewrite_plugin_render_button', 11);
+    }
+}
+add_action('admin_head', 'wp_rewrite_plugin_add_button');
+
+// Render the button HTML
+function wp_rewrite_plugin_render_button()
+{
+?>
+    <style>
+        #wp-rewrite-plugin-dialog {
+            display: none;
+        }
+    </style>
+    <a href="#" class="button" id="wp-rewrite-plugin-button">Rewrite</a>
+    <div id="wp-rewrite-plugin-dialog" title="Rewrite Post">
+        <p>Click OK to rewrite this post.</p>
+    </div>
+    <script>
+        (function($) {
+            $(document).ready(function() {
+                var api_key = '<?php echo esc_js(get_option('wp_rewrite_plugin_api_key')); ?>';
+                if (!api_key) {
+                    alert('Please enter an API key in the WP Rewrite Plugin settings.');
+                }
+                $('#wp-rewrite-plugin-dialog').dialog({
+                    autoOpen: false,
+                    modal: true,
+                    buttons: {
+                        "OK": function() {
+                            $(this).dialog("close");
+                            wp_rewrite_plugin_rewriter(api_key);
+                        },
+                        "Cancel": function() {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+                $('#wp-rewrite-plugin-button').click(function(e) {
+                    e.preventDefault();
+                    $('#wp-rewrite-plugin-dialog').dialog('open');
+                });
+            });
+        })(jQuery);
+    </script>
+<?php
+}
+// Rewrite the post using the ChatGPT API
+function wp_rewrite_plugin_rewriter(api_key) {
+    // TODO: Implement the API request to rewrite the post
+    alert('Rewriting post...');
+  }
